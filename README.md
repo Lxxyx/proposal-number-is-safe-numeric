@@ -4,161 +4,196 @@ A TC39 proposal to add `String.prototype.isNumeric`: a method that determines if
 
 ## Status
 
-**Stage:** 0  \
-**Champion:** WIP  \
-**Authors:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)  \
+**Stage:** 0  
+**Champion:** WIP  
+**Authors:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)  
 **Last Presented:** (unpresented)
 
-## Overview and motivation
+## Motivation
 
-When working with strings, developers frequently need to determine if a string represents a numeric value. Currently, developers typically implement this using regular expressions or type conversion checks:
+When working with strings, developers frequently need to determine if a string represents a numeric value. Currently, there's no standardized way to perform this validation, leading to:
+
+1. Inconsistent implementations across projects
+2. Complex validation logic or external library dependencies
+3. Potential bugs from loose type coercion
+4. Varying handling of edge cases (scientific notation, Unicode numbers, etc.)
+
+### User Questions from `is-number`(~80.8M weekly downloads) ([#39](https://github.com/jonschlinkert/is-number/issues/39))
+
+Q: Why does this even exist?  \
+A: The `is-number` library is useful because of JavaScript's **type coercion system**, where different data types, like `strings` or `objects`, can sometimes be interpreted as **numbers**. JavaScript's **implicit type conversion** can result in unexpected outcomes, especially when checking if a value is **numeric**.
+
+## Proposed Solution
+
+`String.prototype.isNumeric()` would provide a standardized way to validate if a string represents a valid number:
 
 ```js
-// Using regex
-function isNumeric(str) {
-    return /^-?\d*\.?\d+$/.test(str);
-}
-
-// Using type conversion
-function isNumeric(str) {
-    return !isNaN(str) && !isNaN(parseFloat(str));
-}
+"5".isNumeric()      // true
+"3.14".isNumeric()   // true
+"-42".isNumeric()    // true
+"1e-10".isNumeric()  // true
+"abc".isNumeric()    // false
+"12px".isNumeric()   // false
+"".isNumeric()       // false
+"٥".isNumeric()      // true (Unicode digit)
+"½".isNumeric()      // true (numeric fraction)
 ```
 
-## Current Problems
+## Current Challenges
 
-When developers need to validate if a string represents a valid number, they often face several challenges:
+### 1. Inconsistent Type Coercion
 
-### Inconsistent Type Coercion
-
-JavaScript's loose type system can lead to unexpected results:
+JavaScript's loose type system leads to unexpected results:
 
 ```js
-Number("123")     // 123
-Number("12.3")    // 12.3
-Number("12.3.4")  // NaN
 Number("")        // 0 (not NaN!)
 Number(" ")       // 0 (not NaN!)
 Number(null)      // 0 (not NaN!)
 Number("0x11")    // 17 (converts hex)
-Number("011")     // 11 (no octal in strict mode)
+Number("12.3.4")  // NaN
 ```
 
-### NaN Propagation Issues
-
-Invalid number parsing can lead to hard-to-debug NaN propagation:
-
-```js
-const userInput = "invalid";
-const number = Number(userInput);  // NaN
-
-// NaN silently propagates through calculations
-const total = number + 100;        // NaN
-const average = total / 2;         // NaN
-
-// Can lead to unexpected UI states
-element.style.width = average + "px";  // "NaNpx"
-```
-
-### Inconsistent Validation Methods
+### 2. Inconsistent Validation Methods
 
 Different approaches give different results:
 
 ```js
-// Using Number
-!isNaN("123")           // true
-!isNaN("12.3")         // true
+// Using Number/isNaN
 !isNaN("")             // true (problematic!)
 !isNaN(" ")            // true (problematic!)
 
 // Using parseFloat
-!isNaN(parseFloat("123"))     // true
-!isNaN(parseFloat("12.3"))    // true
-!isNaN(parseFloat(""))        // false
-!isNaN(parseFloat("abc"))     // false
+!isNaN(parseFloat(""))     // false
+!isNaN(parseFloat("abc"))  // false
 
 // Using regex
-+/^-?\d*\.?\d+$/.test("123")   // true
-+/^-?\d*\.?\d+$/.test("12.3")  // true
-+/^-?\d*\.?\d+$/.test("")      // false
-+/^-?\d*\.?\d+$/.test("1e5")   // false (doesn't handle scientific notation)
+/^-?\d*\.?\d+$/.test("")   // false
+/^-?\d*\.?\d+$/.test("1e5") // false (doesn't handle scientific notation)
 ```
 
-These inconsistencies force developers to either:
-1. Accept potential bugs from loose type coercion
-2. Write complex validation logic
-3. Include external libraries for proper number validation
-
-## Motivation
-
-Our primary motivation is its usefulness and common implementation in existing projects where it is often defined for the sake of readability. Projects tend to implement this functionality through various approaches, each with their own drawbacks:
-
-- Regular expressions require knowledge of regex syntax and are error-prone
-- Type conversion approaches may have unexpected behavior with edge cases
-- Different implementations may handle edge cases differently (scientific notation, localized numbers)
-- Handling of Unicode numeric values varies between implementations
-
-## Existing Implementations
-
-Many other programming languages provide this functionality as a built-in method:
-
-- Python: [`str.isnumeric()`](https://docs.python.org/3/library/stdtypes.html#str.isnumeric)
-- Java: [`Character.isDigit()`](https://docs.oracle.com/javase/8/docs/api/java/lang/Character.html#isDigit-char-)
-- C#: [`Double.TryParse()`](https://learn.microsoft.com/en-us/dotnet/api/system.double.tryparse)
-- Ruby: [`String#match?`](https://ruby-doc.org/core-3.0.0/String.html#method-i-match-3F)
-- PHP: [`is_numeric()`](https://www.php.net/manual/en/function.is-numeric.php)
-- Swift: [`Character.isNumber`](https://developer.apple.com/documentation/swift/character/3127017-isnumber)
-- Go: [`unicode.IsDigit()`](https://pkg.go.dev/unicode#IsDigit)
-- Rust: [`str::parse::<f64>()`](https://doc.rust-lang.org/std/primitive.str.html#method.parse)
-- Kotlin: [`Char.isDigit()`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/is-digit.html)
-- Perl: [`isdigit()`](https://perldoc.perl.org/functions/isdigit)
-
-And userland JavaScript implementations:
+### 3. NaN Propagation Issues
 
 ```js
-// Lodash
-_.isNumber('3') // true
-
-// validator.js
-validator.isNumeric('3') // true
-
-// is.js
-is.number('3') // true
-
-// Common custom implementation
-const isNumeric = str => /^-?\d*\.?\d+$/.test(str);
-
-// Comprehensive implementation
-const isNumeric = str => {
-  if (typeof str !== 'string') return false;
-  return !isNaN(str) && 
-         !isNaN(parseFloat(str));
-};
+const userInput = "invalid";
+const number = Number(userInput);  // NaN
+const total = number + 100;        // NaN silently propagates
+element.style.width = total + "px";  // "NaNpx"
 ```
 
-Popular libraries and frameworks that implement similar functionality:
+## Current Workarounds
 
-- [`lodash`](https://lodash.com/docs/#isNumber)
-- [`validator.js`](https://github.com/validatorjs/validator.js)
-- [`is.js`](https://is.js.org/)
-- [`ramda`](https://ramdajs.com/)
-- [`underscore`](https://underscorejs.org/)
+Developers typically implement validation using one of these three approaches:
 
-## Examples
-
-The proposed API allows developers to check for numeric values like:
+### 1. Regex Approach
 
 ```js
-"5".isNumeric() // true
-"3.14".isNumeric() // true
-"-42".isNumeric() // true
-"1e-10".isNumeric() // true
-"abc".isNumeric() // false
-"12px".isNumeric() // false
-"".isNumeric() // false
-"٥".isNumeric() // true (Unicode digit)
-"½".isNumeric() // true (numeric fraction)
+function isNumeric(str) {
+    return /^-?\d*\.?\d+$/.test(str);
+}
+
+// ✅ Good cases
+isNumeric("123")    // true
+isNumeric("-123")   // true
+isNumeric("12.34")  // true
+
+// ❌ Edge cases it fails to handle
+isNumeric("1e5")    // false - doesn't handle scientific notation
+isNumeric("٥")      // false - doesn't handle Unicode digits
+isNumeric("½")      // false - doesn't handle numeric fractions
+isNumeric(".5")     // false - doesn't handle leading decimal
 ```
+
+### 2. Type Conversion Approach
+
+```js
+function isNumeric(str) {
+    return !isNaN(str) && !isNaN(parseFloat(str));
+}
+
+// ✅ Good cases
+isNumeric("123")    // true
+isNumeric("-123")   // true
+isNumeric("1e5")    // true
+isNumeric(".5")     // true
+
+// ❌ Problematic cases
+isNumeric("")       // true - empty string converts to 0
+isNumeric(" ")      // true - whitespace converts to 0
+isNumeric("0x11")   // true - handles hex (may be unwanted)
+isNumeric("123abc") // true - partial parsing
+```
+
+### 3. Comprehensive Approach
+
+```js
+function isNumeric(str) {
+    if (typeof str !== 'string') return false;
+    const num = Number(str.trim());
+    return !isNaN(num) && 
+           typeof num === 'number' && 
+           str.trim() !== '';
+}
+
+// ✅ Good cases
+isNumeric("123")     // true
+isNumeric("-123")    // true
+isNumeric("1e5")     // true
+isNumeric(".5")      // true
+isNumeric("٥")       // true
+
+// ❌ Still has edge cases
+isNumeric("0x11")    // true - handles hex
+isNumeric("123,456") // false - doesn't handle locale formats
+isNumeric("1.2.3")   // false - invalid number format
+```
+
+Each approach has its trade-offs, and developers must choose based on their specific needs. This inconsistency in implementation and handling of edge cases is one of the main motivations for adding `String.prototype.isNumeric` to the language.
+
+## Similar Features in Other Languages
+
+| Language | Method | Documentation |
+|----------|---------|--------------|
+| Python | `str.isnumeric()` | [Link](https://docs.python.org/3/library/stdtypes.html#str.isnumeric) |
+| PHP | `is_numeric()` | [Link](https://www.php.net/manual/en/function.is-numeric.php) |
+| Java | `Character.isDigit()` | [Link](https://docs.oracle.com/javase/8/docs/api/java/lang/Character.html#isDigit-char-) |
+| C# | `Double.TryParse()` | [Link](https://learn.microsoft.com/en-us/dotnet/api/system.double.tryparse) |
+| Swift | `Character.isNumber` | [Link](https://developer.apple.com/documentation/swift/character/3127017-isnumber) |
+| Ruby | `String#match?` | [Link](https://ruby-doc.org/core-3.0.0/String.html#method-i-match-3F) |
+| Go | `unicode.IsDigit()` | [Link](https://pkg.go.dev/unicode#IsDigit) |
+| Rust | `str::parse::<f64>()` | [Link](https://doc.rust-lang.org/std/primitive.str.html#method.parse) |
+| Kotlin | `String.toDoubleOrNull()` | [Link](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/to-double-or-null.html) |
+| Perl | `isdigit()` | [Link](https://perldoc.perl.org/functions/isdigit) |
+
+Each language provides built-in ways to validate numeric strings, demonstrating the widespread need for such functionality across programming languages.
+
+## Popular JavaScript Libraries
+
+Many libraries implement similar functionality:
+
+| Library | Method | NPM Weekly Downloads |
+|---------|---------|-----------------|
+| [is-number](https://www.npmjs.com/package/is-number) | `isNumber()` | 80.8M |
+| [jQuery](https://api.jquery.com/jQuery.isNumeric/) | `$.isNumeric()` | 12.4M |
+| [validator.js](https://github.com/validatorjs/validator.js#validators) | `validator.isNumeric()` | 11.9M |
+| [is-number-like](https://www.npmjs.com/package/is-number-like) | `isNumberLike()` | 1.2M |
+| [isnumeric](https://www.npmjs.com/package/isnumeric) | `isNumeric()` | 227K |
+| [fast-isnumeric](https://www.npmjs.com/package/fast-isnumeric) | `isNumeric()` | 162.9K |
+
+
+## Alternative Names Considered
+
+### `String.prototype.isDigit`
+
+**Pros:**
+- More specific (digit-only strings)
+- Aligns with similar methods in other languages
+- Clear distinction from `Number.isInteger`/`Number.isFinite`
+
+**Cons:**
+- Limited scope (digits only)
+- Doesn't handle decimals, negatives, or scientific notation
+- Potential confusion with Unicode categories
+- Less flexible for general numeric validation
 
 ## Specification
 
@@ -168,28 +203,6 @@ The proposed API allows developers to check for numeric values like:
 ## Implementations
 
 _No implementations yet_
-
-## Alternative Names
-
-### `String.prototype.isDigit`
-
-The name `isDigit` was considered as an alternative to `isNumeric`. This method would check if a string contains only digit characters (0-9). Here's the comparison:
-
-**Pros of `isDigit`:**
-- More specific in purpose (checking for digit-only strings)
-- Aligns with similar methods in other languages:
-  - Python: `str.isdigit()` - Returns True if all characters in the string are digits
-  - PHP: `ctype_digit()` - Checks if all characters in a string are decimal digits
-  - Ruby: `String#match?(/^\d+$/)` - Common pattern to check digit-only strings
-  - Java: `String.matches("\\d+")` - Common pattern for digit validation
-- Clearer distinction from `Number.isInteger` and `Number.isFinite`
-- Better suited for validating strings containing only digits
-
-**Cons of `isDigit`:**
-- More limited in scope (only digit characters)
-- Doesn't handle decimal points, negative signs, or scientific notation
-- May be confused with Unicode digit categories
-- Less flexible for general numeric validation
 
 ## Acknowledgements
 
