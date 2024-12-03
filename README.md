@@ -1,6 +1,8 @@
-# template-for-proposals
+# proposal-string-isdigit
 
-A repository template for ECMAScript proposals.
+A TC39 proposal to add String.prototype.isDigit.
+
+Current Status: WIP.
 
 ## Before creating a proposal
 
