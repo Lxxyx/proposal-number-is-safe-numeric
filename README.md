@@ -21,23 +21,175 @@ When working with strings, developers frequently need to determine if a string r
 ### User Questions from `is-number`(~80.8M weekly downloads) ([#39](https://github.com/jonschlinkert/is-number/issues/39))
 
 Q: Why does this even exist?  \
-A: The `is-number` library is useful because of JavaScript's **type coercion system**, where different data types, like `strings` or `objects`, can sometimes be interpreted as **numbers**. JavaScript's **implicit type conversion** can result in unexpected outcomes, especially when checking if a value is **numeric**.
+A: The `is-number` library is useful because of JavaScript's type coercion system, where different data types, like `strings` or `objects`, can sometimes be interpreted as numbers. JavaScript's implicit type conversion can result in unexpected outcomes, **especially when checking if a value is numeric**.
 
 ## Proposed Solution
 
-`String.prototype.isNumeric()` would provide a standardized way to validate if a string represents a valid number:
+`String.prototype.isNumeric()` would validate if a string represents a valid decimal number that can be converted to a JavaScript Number or BigInt. The method focuses on practical numeric validation while excluding certain numeric representations.
+
+### Integer Numbers
+**Examples:**
 
 ```js
-"5".isNumeric()      // true
-"3.14".isNumeric()   // true
-"-42".isNumeric()    // true
-"1e-10".isNumeric()  // true
-"abc".isNumeric()    // false
-"12px".isNumeric()   // false
-"".isNumeric()       // false
-"٥".isNumeric()      // true (Unicode digit)
-"½".isNumeric()      // true (numeric fraction)
+"123".isNumeric()        // true
+"-123".isNumeric()       // true
+"0".isNumeric()          // true
 ```
+**Convert to Number:**
+
+```js
+Number("123")            // 123
+Number("-123")          // -123
+Number("0")             // 0
+```
+
+### Decimal Points
+**Examples:**
+
+```js
+"3.14".isNumeric()       // true
+"-0.123".isNumeric()     // true
+".5".isNumeric()         // true
+```
+**Convert to Number:**
+
+```js
+Number("3.14")          // 3.14
+Number("-0.123")        // -0.123
+Number(".5")            // 0.5
+```
+
+### Scientific Notation
+**Examples:**
+
+```js
+"1e-10".isNumeric()      // true
+"1E5".isNumeric()        // true
+"1.23e+4".isNumeric()    // true
+```
+**Conversion to Number:**
+
+```js
+Number("1e-10")         // 0.0000000001
+Number("1E5")           // 100000
+Number("1.23e+4")       // 12300
+```
+
+### Large Numbers (BigInt Range)
+**Examples:**
+
+```js
+"9007199254740991".isNumeric()     // true (MAX_SAFE_INTEGER)
+"-9007199254740991".isNumeric()    // true
+"9007199254740992".isNumeric()     // true (Beyond MAX_SAFE_INTEGER)
+```
+**Conversion to Number/BigInt:**
+
+```js
+BigInt("9007199254740991")        // 9007199254740991n
+BigInt("-9007199254740991")       // -9007199254740991n
+BigInt("9007199254740992")        // 9007199254740992n
+```
+
+### Invalid Cases
+
+#### Empty/Whitespace
+**Examples:**
+
+```js
+"".isNumeric()           // false
+" ".isNumeric()          // false
+```
+**Current Behavior:**
+
+```js
+Number("")              // 0 (problematic!)
+Number(" ")            // 0 (problematic!)
+```
+
+#### Non-decimal Notations
+**Examples:**
+
+```js
+"0xFF".isNumeric()       // false (hex)
+"0b11".isNumeric()       // false (binary)
+"0o7".isNumeric()        // false (octal)
+```
+**Current Behavior:**
+
+```js
+Number("0xFF")          // 255 (converts hex)
+Number("0b11")          // 3 (converts binary)
+Number("0o7")           // 7 (converts octal)
+```
+
+#### Special Number Values
+**Examples:**
+
+```js
+"NaN".isNumeric()        // false
+"Infinity".isNumeric()   // false
+"-Infinity".isNumeric()  // false
+```
+**Current Behavior:**
+
+```js
+Number("NaN")           // NaN
+Number("Infinity")      // Infinity
+Number("-Infinity")     // -Infinity
+```
+
+#### Invalid Formats
+**Examples:**
+
+```js
+"1,234".isNumeric()      // false (thousands separator)
+"1.2.3".isNumeric()      // false (multiple dots)
+"12px".isNumeric()       // false (mixed content)
+"1_000".isNumeric()      // false (numeric separator)
+```
+**Current Behavior:**
+
+```js
+Number("1,234")         // NaN
+Number("1.2.3")         // NaN
+Number("12px")          // NaN
+Number("1_000")         // NaN
+```
+
+#### Unicode Numbers
+**Examples:**
+
+```js
+"٥".isNumeric()          // false (Arabic-Indic digit)
+"二".isNumeric()         // false (Han numeric)
+"½".isNumeric()          // false (fraction)
+```
+**Current Behavior:**
+
+```js
+Number("٥")             // NaN
+Number("二")            // NaN
+Number("½")             // NaN
+```
+
+### Scope Definition
+1. **Includes**:
+   - Decimal integers (via `Number()`)
+   - Floating-point numbers (via `Number()`)
+   - Scientific notation (via `Number()`)
+   - Numbers within BigInt range (via `BigInt()`)
+   - Leading decimal point (via `Number()`)
+
+2. **Excludes**:
+   - Non-decimal number representations
+   - Special values (NaN, Infinity)
+   - Formatted numbers (with separators)
+   - Unicode numeric characters
+   - Mixed alphanumeric strings
+   - Empty strings or whitespace
+
+This scope aligns with common numeric validation needs while maintaining clear, predictable behavior.
 
 ## Current Challenges
 
