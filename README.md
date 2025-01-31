@@ -62,6 +62,10 @@ const apiResponse = 'null'
 document.querySelector('.price').value = Number(apiResponse) // NaN
 ```
 
+## Alternative Names
+
+Alternative names considered for this proposal:
+
 ## The Solution
 
 `String.isSafeDecimal` is a method that tests if a string can be safely converted to a JavaScript number without precision loss.
@@ -142,6 +146,18 @@ Many libraries implement similar functionality, but most don't handle safe integ
 | [validator.js](https://github.com/validatorjs/validator.js#validators) | `validator.isNumeric()` | ❌                 | 11.9M                |
 
 This demonstrates the need for a standardized way to validate safe decimal strings in JavaScript.
+
+### `String.isSafeNumber`
+
+Pros:
+
+- More intuitive and general name
+- Doesn't conflict with TC39 Decimal proposal ([tc39/proposal-decimal](https://github.com/tc39/proposal-decimal))
+
+Cons:
+
+- Less specific about decimal validation
+- Could imply support for non-decimal formats
 
 ## Specification
 
