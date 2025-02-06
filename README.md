@@ -61,26 +61,46 @@ Note: While numbers with more than 15 significant digits are often unsafe, the a
 Examples:
 
 ```javascript
-// Integer
-String.isSafeDecimal('123') // true (integer part is within safe range)
-String.isSafeDecimal('9007199254740991') // true (integer part is within safe range)
-String.isSafeDecimal('9007199254740992') // false (integer part is out of safe range)
+// Integers within safe range
+String.isSafeDecimal('0') // true
+String.isSafeDecimal('123') // true
+String.isSafeDecimal('-123') // true
+String.isSafeDecimal('9007199254740991') // true (Number.MAX_SAFE_INTEGER)
+String.isSafeDecimal('-9007199254740991') // true (Number.MIN_SAFE_INTEGER)
 
-// Floating Point
-String.isSafeDecimal('123.456789') // true (9 digits total)
-String.isSafeDecimal('1.234567890123456') // false (16 digits, exceeds safe precision)
-String.isSafeDecimal('9007199254740991.1') // false (integer part at limit, decimal makes it unsafe)
-String.isSafeDecimal('0.1234567890123456789') // false (19 digits after decimal, exceeds safe precision)
-String.isSafeDecimal('0.123456789012345') // true (15 digits, within safe precision)
-String.isSafeDecimal('-0.123456789012345') // true (negative floating point within safe precision)
+// Integers outside safe range
+String.isSafeDecimal('9007199254740992') // false (exceeds MAX_SAFE_INTEGER)
+String.isSafeDecimal('-9007199254740992') // false (exceeds MIN_SAFE_INTEGER)
 
-// Edge cases
+// Valid floating point numbers
+String.isSafeDecimal('0.0') // true
+String.isSafeDecimal('123.456') // true
+String.isSafeDecimal('-123.456') // true
+String.isSafeDecimal('0.123456789012345') // true (15 digits precision)
+String.isSafeDecimal('-0.123456789012345') // true (15 digits precision)
+
+// Invalid floating point numbers (precision loss)
+String.isSafeDecimal('0.1234567890123456') // false (16 digits, exceeds safe precision)
+String.isSafeDecimal('9007199254740991.1') // false (integer part at limit + decimal)
+String.isSafeDecimal('1.234567890123456789') // false (19 digits after decimal)
+
+// Invalid formats
+String.isSafeDecimal('1e5') // false (scientific notation)
+String.isSafeDecimal('1,000') // false (contains separator)
+String.isSafeDecimal('１２３') // false (unicode numbers)
+String.isSafeDecimal('0x123') // false (hexadecimal)
+String.isSafeDecimal('.123') // false (missing leading zero)
+String.isSafeDecimal('123.') // false (trailing decimal point)
+
+// Non-numeric inputs
 String.isSafeDecimal(null) // false
 String.isSafeDecimal(undefined) // false
 String.isSafeDecimal('') // false
 String.isSafeDecimal(' ') // false
-String.isSafeDecimal(NaN) // false
-String.isSafeDecimal(Infinity) // false
+String.isSafeDecimal('abc') // false
+String.isSafeDecimal('12a34') // false
+String.isSafeDecimal('+-123') // false
+String.isSafeDecimal('123..456') // false
 ```
 
 # Prior art
