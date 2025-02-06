@@ -22,6 +22,9 @@ However, JavaScript numbers (IEEE 754) have key limitations:
 1. No standard way to validate string-to-number conversion safety, which leads to many non-intuitive behaviors
 
 ```javascript
+console.log(Number('')) //=> 0
+console.log(Number(null)) //=> 0
+console.log(Number(undefined)) //=> NaN
 console.log(+[]) //=> 0
 console.log(+'') //=> 0
 console.log(+'   ') //=> 0
@@ -33,7 +36,6 @@ console.log(typeof NaN) //=> 'number'
 ```javascript
 console.log(Number('9007199254740992') + 1) //=> 9007199254740992, precision loss
 console.log(Number('9007199254740991.1')) //=> 9007199254740991, precision loss
-
 console.log(Number('0.1234567890123456789')) //=> 0.12345678901234568, precision loss
 ```
 
