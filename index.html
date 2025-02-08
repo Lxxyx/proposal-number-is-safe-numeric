@@ -3300,7 +3300,7 @@ emu-intro {
     <ul>
       <li><emu-xref aoid="Contains"><a href="https://tc39.es/ecma262/#sec-static-semantics-contains">Contains</a></emu-xref> only digits (0-9), with exactly one decimal point (optional), and may have one leading minus sign</li>
       <li><emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">Integer</a></emu-xref> part must be within ±2^53-1 (Number.MAX_SAFE_INTEGER)</li>
-      <li>When converted to Number and back to string, must match the original input exactly</li>
+      <li>Must maintain exact precision when converted to Number (no precision loss)</li>
       <li>No leading zeros (except for decimal numbers &lt; 1)</li>
       <li>No trailing decimal point</li>
       <li>No leading decimal point (must have 0 before decimal)</li>
