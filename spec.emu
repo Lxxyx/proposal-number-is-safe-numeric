@@ -4,36 +4,51 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: Proposal Title Goes Here
-stage: -1
-contributors: Your Name(s) Here
+title: Number.isSafeNumeric
+status: proposal
+stage: 0
+location: https://github.com/lxxyx/proposal-number-issafenumeric
+copyright: false
+contributors: ZiJian Liu, YiLong Li
 </pre>
 
-<emu-clause id="sec-demo-clause">
-  <h1>This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg>
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*<sub>ℤ</sub>.
-    1. Else,
-      1. Let _stage_ be *-1*<sub>ℤ</sub>.
-    1. Return ? ToString(_stage_).
-  </emu-alg>
-</emu-clause>
+<emu-clause id="sec-number.issafenumeric">
+  <h1>Number.isSafeNumeric ( _input_ )</h1>
+  <emu-note>
+    <p>This method determines if a string can be safely converted to a JavaScript Number (float64) without precision loss. A string is considered "safe numeric" if it meets ALL of the following criteria:</p>
+    <ul>
+      <li>Contains only digits (0-9), with exactly one decimal point (optional), and may have one leading minus sign</li>
+      <li>Integer part must be within ±2^53-1 (Number.MAX_SAFE_INTEGER)</li>
+      <li>When converted to Number and back to string, must match the original input exactly</li>
+      <li>No leading zeros (except for decimal numbers < 1)</li>
+      <li>No trailing decimal point</li>
+      <li>No leading decimal point (must have 0 before decimal)</li>
+    </ul>
+  </emu-note>
+  <p>When the *isSafeNumeric* method is called with argument _input_, the following steps are taken:</p>
 
-<emu-clause id="sec-is-accepted" type="abstract operation">
-  <h1>
-      IsAccepted (
-        _proposal_: an ECMAScript language value
-      ): a Boolean
-  </h1>
-  <dl class="header">
-    <dt>description</dt>
-    <dd>Tells you if the proposal was accepted</dd>
-  </dl>
   <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
+    1. If the type of _input_ is not String, return *false*.
+    1. Let _str_ be ? ToString(_input_).
+    1. If _str_ is empty or contains only whitespace, return *false*.
+    1. If _str_ contains any characters other than:
+      * Digits (0-9)
+      * One decimal point
+      * One leading minus sign
+      Return *false*.
+    1. If _str_ contains:
+      * Leading zeros (except for decimal numbers < 1)
+      * Leading decimal point without zero
+      * Trailing decimal point
+      * Multiple decimal points
+      Return *false*.
+    1. Let _n_ be ? ToNumber(_str_).
+    1. If _n_ is *NaN* or is not finite, return *false*.
+    1. Let _converted_ be ? ToString(_n_).
+    1. If SameValue(_converted_, _str_) is *false*, return *false*.
+    1. Let _integerPart_ be the substring of _str_ before any decimal point, or _str_ if no decimal point exists.
+    1. Let _integerValue_ be ? ToNumber(_integerPart_).
+    1. If abs(_integerValue_) > 2<sup>53</sup> - 1, return *false*.
     1. Return *true*.
   </emu-alg>
 </emu-clause>
