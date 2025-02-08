@@ -7,7 +7,7 @@
 title: Number.isSafeNumeric
 status: proposal
 stage: 0
-location: https://github.com/lxxyx/proposal-number-issafenumeric
+location: https://github.com/lxxyx/proposal-number-is-safe-numeric
 copyright: false
 contributors: ZiJian Liu, YiLong Li
 </pre>
