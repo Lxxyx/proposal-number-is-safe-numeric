@@ -32,7 +32,7 @@ contributors: ZiJian Liu, YiLong Li
     1. Let _str_ be ? ToString(_input_).
     1. If _str_ is empty or contains only whitespace, return *false*.
     1. If _str_ contains any characters other than:
-      * Digits (0-9)
+      * ASCII digits (0-9)
       * One decimal point
       * One leading minus sign
       return *false*.
