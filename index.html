@@ -1,17 +1,13 @@
 <!doctype html>
-<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="Proposal Title Goes Here"><meta property="og:description" content="This is an emu-clause
-  This is an algorithm:
+<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="Number.isSafeNumeric"><meta property="og:description" content="Number.isSafeNumeric ( _input_ )
   
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*ℤ.
-    1. Else,
-      1. Let _stage_ be *-1*ℤ.
-    1. Return ? ToString(_stage_).">
+    This method determines if a string can be safely converted to a JavaScript Number (float64) without precision loss. A string is considered &quot;safe numeric&quot; if it meets ALL of the following criteria:
+    
+      Contains only digits (0-9), with exactly one deci">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/base16/solarized-light.min.css"><link rel="stylesheet" href="./spec.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
-<title>Proposal Title Goes Here</title><script>'use strict';
+<title>Number.isSafeNumeric</title><script>'use strict';
 let sdoBox = {
   init() {
     this.$alternativeId = null;
@@ -1618,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let sdoMap = JSON.parse(`{}`);
-let biblio = JSON.parse(`{"refsByClause":{"sec-demo-clause":["_ref_0"]},"entries":[{"type":"clause","id":"sec-demo-clause","titleHTML":"This is an emu-clause","number":"1"},{"type":"op","aoid":"IsAccepted","refId":"sec-is-accepted"},{"type":"clause","id":"sec-is-accepted","title":"IsAccepted ( proposal )","titleHTML":"IsAccepted ( <var>proposal</var> )","number":"2","referencingIds":["_ref_0"]},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
+let biblio = JSON.parse(`{"refsByClause":{},"entries":[{"type":"clause","id":"sec-number.issafenumeric","title":"Number.isSafeNumeric ( input )","titleHTML":"Number.isSafeNumeric ( <var>input</var> )","number":"1"}]}`);
 ;let usesMultipage = false</script><style>/* IBM Plex fonts (Latin subset) have been downloaded from Google Fonts and modified to add support back in for the `zero` substitution (slashed zeroes) */
 
 /* https://fonts.googleapis.com/css2?family=IBM%20Plex%20Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap */
@@ -3295,36 +3291,25 @@ emu-intro {
 </ul></div><div id="menu-toggle"><svg xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; stroke:currentColor" viewBox="0 0 120 120" width="54" height="54">
       <title>Menu</title>
       <path stroke-width="10" stroke-linecap="round" d="M30,60 h60  M30,30 m0,5 h60  M30,90 m0,-5 h60"></path>
-    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-demo-clause" title="This is an emu-clause"><span class="secnum">1</span> This is an emu-clause</a></li><li><span class="item-toggle-none"></span><a href="#sec-is-accepted" title="IsAccepted ( proposal )"><span class="secnum">2</span> IsAccepted ( <var>proposal</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License"><span class="secnum">A</span> Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage -1 Draft / February 6, 2025</h1><h1 class="title">Proposal Title Goes Here</h1>
+    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-number.issafenumeric" title="Number.isSafeNumeric ( input )"><span class="secnum">1</span> Number.isSafeNumeric ( <var>input</var> )</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage 0 Draft / February 8, 2025</h1><h1 class="title">Number.isSafeNumeric</h1>
 
-<emu-clause id="sec-demo-clause">
-  <h1><span class="secnum">1</span> This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg><ol><li>Let <var>proposal</var> be <emu-val>undefined</emu-val>.</li><li>If <emu-xref aoid="IsAccepted" id="_ref_0"><a href="#sec-is-accepted">IsAccepted</a></emu-xref>(<var>proposal</var>) is <emu-val>true</emu-val>, then<ol><li>Let <var>stage</var> be <emu-val>0</emu-val><sub>ℤ</sub>.</li></ol></li><li>Else,<ol><li>Let <var>stage</var> be <emu-val>-1</emu-val><sub>ℤ</sub>.</li></ol></li><li>Return ?&nbsp;<emu-xref aoid="ToString"><a href="https://tc39.es/ecma262/#sec-tostring">ToString</a></emu-xref>(<var>stage</var>).</li></ol></emu-alg>
+<emu-clause id="sec-number.issafenumeric">
+  <h1><span class="secnum">1</span> Number.isSafeNumeric ( <var>input</var> )</h1>
+  <emu-note><span class="note">Note</span><div class="note-contents">
+    <p>This method determines if a string can be safely converted to a JavaScript Number (float64) without precision loss. A string is considered "safe numeric" if it meets ALL of the following criteria:</p>
+    <ul>
+      <li><emu-xref aoid="Contains"><a href="https://tc39.es/ecma262/#sec-static-semantics-contains">Contains</a></emu-xref> only digits (0-9), with exactly one decimal point (optional), and may have one leading minus sign</li>
+      <li><emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">Integer</a></emu-xref> part must be within ±2^53-1 (Number.MAX_SAFE_INTEGER)</li>
+      <li>When converted to Number and back to string, must match the original input exactly</li>
+      <li>No leading zeros (except for decimal numbers &lt; 1)</li>
+      <li>No trailing decimal point</li>
+      <li>No leading decimal point (must have 0 before decimal)</li>
+    </ul>
+  </div></emu-note>
+  <p>When the <emu-val>isSafeNumeric</emu-val> method is called with argument <var>input</var>, the following steps are taken:</p>
+
+  <emu-alg><ol><li>If the type of <var>input</var> is not String, return <emu-val>false</emu-val>.</li><li>Let <var>str</var> be ?&nbsp;<emu-xref aoid="ToString"><a href="https://tc39.es/ecma262/#sec-tostring">ToString</a></emu-xref>(<var>input</var>).</li><li>If <var>str</var> is empty or contains only whitespace, return <emu-val>false</emu-val>.</li><li>If <var>str</var> contains any characters other than:<ul><li>Digits (0-9)</li><li>One decimal point</li><li>One leading minus sign
+      Return <emu-val>false</emu-val>.</li></ul></li><li>If <var>str</var> contains:<ul><li>Leading zeros (except for decimal numbers &lt; 1)</li><li>Leading decimal point without zero</li><li>Trailing decimal point</li><li>Multiple decimal points
+      Return <emu-val>false</emu-val>.</li></ul></li><li>Let <var>n</var> be ?&nbsp;<emu-xref aoid="ToNumber"><a href="https://tc39.es/ecma262/#sec-tonumber">ToNumber</a></emu-xref>(<var>str</var>).</li><li>If <var>n</var> is <emu-val>NaN</emu-val> or is not <emu-xref href="#finite"><a href="https://tc39.es/ecma262/#finite">finite</a></emu-xref>, return <emu-val>false</emu-val>.</li><li>Let <var>converted</var> be ?&nbsp;<emu-xref aoid="ToString"><a href="https://tc39.es/ecma262/#sec-tostring">ToString</a></emu-xref>(<var>n</var>).</li><li>If <emu-xref aoid="SameValue"><a href="https://tc39.es/ecma262/#sec-samevalue">SameValue</a></emu-xref>(<var>converted</var>, <var>str</var>) is <emu-val>false</emu-val>, return <emu-val>false</emu-val>.</li><li>Let <var>integerPart</var> be the <emu-xref href="#substring"><a href="https://tc39.es/ecma262/#substring">substring</a></emu-xref> of <var>str</var> before any decimal point, or <var>str</var> if no decimal point exists.</li><li>Let <var>integerValue</var> be ?&nbsp;<emu-xref aoid="ToNumber"><a href="https://tc39.es/ecma262/#sec-tonumber">ToNumber</a></emu-xref>(<var>integerPart</var>).</li><li>If <emu-xref aoid="abs"><a href="https://tc39.es/ecma262/#eqn-abs">abs</a></emu-xref>(<var>integerValue</var>) &gt; 2<sup>53</sup> - 1, return <emu-val>false</emu-val>.</li><li>Return <emu-val>true</emu-val>.</li></ol></emu-alg>
 </emu-clause>
-
-<emu-clause id="sec-is-accepted" type="abstract operation" aoid="IsAccepted">
-  <h1><span class="secnum">2</span> IsAccepted ( <var>proposal</var> )</h1>
-  <p>The abstract operation IsAccepted takes argument <var>proposal</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a Boolean. Tells you if the proposal was accepted It performs the following steps when called:</p>
-  <emu-alg><ol><li>If <var>proposal</var> <emu-xref href="#sec-ecmascript-language-types-string-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-string-type">is not a String</a></emu-xref>, or is not accepted, return <emu-val>false</emu-val>.</li><li>Return <emu-val>true</emu-val>.</li></ol></emu-alg>
-</emu-clause><emu-annex id="sec-copyright-and-software-license">
-      <h1><span class="secnum">A</span> Copyright &amp; Software License</h1>
-      
-      <h2>Copyright Notice</h2>
-      <p>© 2025 Your Name(s) Here</p>
-
-      <h2>Software License</h2>
-      <p>All Software contained in this document ("Software") is protected by copyright and is being made available under the "BSD License", included below. This Software may be subject to third party rights (rights from parties other than Ecma International), including patent rights, and no licenses under such third party rights are granted under this license even if the third party concerned is a member of Ecma International. SEE THE ECMA CODE OF CONDUCT IN PATENT MATTERS AVAILABLE AT <a href="https://ecma-international.org/memento/codeofconduct.htm">https://ecma-international.org/memento/codeofconduct.htm</a> FOR INFORMATION REGARDING THE LICENSING OF PATENT CLAIMS THAT ARE REQUIRED TO IMPLEMENT ECMA INTERNATIONAL STANDARDS.</p>
-
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-
-<ol>
-  <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-  <li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-  <li>Neither the name of the authors nor Ecma International may be used to endorse or promote products derived from this software without specific prior written permission.</li>
-</ol>
-
-<p>THIS SOFTWARE IS PROVIDED BY THE ECMA INTERNATIONAL "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ECMA INTERNATIONAL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-
-    </emu-annex>
 </div></body>
