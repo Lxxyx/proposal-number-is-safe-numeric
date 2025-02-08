@@ -4,7 +4,7 @@ A TC39 proposal to add `Number.isSafeNumeric`.
 
 A simple and reliable method to validate input is numeric string and represents a valid javascript number.
 
-Pros:
+Key Benefits:
 
 1. Ensure input is a valid numeric string, **reducing unexpected behaviors during parsing and subsequent calculations**
 2. Avoid precision loss that may lead to unexpected behavior **(developers may not aware of this)**
@@ -28,15 +28,14 @@ In web development, validating strings that can be safely converted to JavaScrip
 
 However, current solutions have significant limitations:
 
-### 1. Issues with Built-in Parsing Methods and Validation Methods
+### 1. Inconsistent Built-in Parsing and Validation Methods
 
-Using existing JavaScript APIs (`Number()`, `parseInt()`, `parseFloat()`, `isFinite()`) to parse or validate numeric strings presents multiple challenges:
+JavaScript's built-in methods (`Number()`, `parseInt()`, `parseFloat()`, `isFinite()`) have inconsistent behaviors:
 
 - Difficult to choose which method to use
 - Need handle edge cases manually, and it's hard to remember all of them
-- Brings unnecessary performance overhead
 
-#### Built-in Parsing Methods
+#### Built-in Parsing and Validation Methods
 
 | Input String              | `Number()`            | `parseInt()`       | `parseFloat()`        | `isFinite()` | Issue                                    |
 | ------------------------- | --------------------- | ------------------ | --------------------- | ------------ | ---------------------------------------- |
@@ -53,9 +52,9 @@ Using existing JavaScript APIs (`Number()`, `parseInt()`, `parseFloat()`, `isFin
 | `'Infinity'`              | `Infinity`            | `NaN`              | `Infinity`            | `false`      | Infinity handling inconsistent           |
 | `'-Infinity'`             | `-Infinity`           | `NaN`              | `-Infinity`           | `false`      | Negative infinity handling inconsistent  |
 
-### 2. Limitations of Code based validation
+### 2. Complex Custom Validation
 
-Developers often need to implement complex validation logic to properly validate numeric strings:
+Current validation approaches often require complex code or third-party libraries:
 
 <details>
 <summary>StackOverflow Example</summary>
@@ -63,6 +62,7 @@ Developers often need to implement complex validation logic to properly validate
 > 3276 Votes, Link: [How can I check if a string is a valid number?](https://stackoverflow.com/questions/175739/how-can-i-check-if-a-string-is-a-valid-number)
 
 ```javascript
+// Simple but unreliable
 function isNumeric(str) {
   if (typeof str != 'string') return false // we only process strings!
   return !isNaN(str) && !isNaN(parseFloat(str))
@@ -74,24 +74,10 @@ isNumeric('0.1234567890123456789') // true, but when converted to Number, precis
 </details>
 
 <details>
-<summary>Using npm libraries: `validator` and `is-number`</summary>
-
-Using [validator](https://www.npmjs.com/package/validator)#isDecimal and [is-number](https://www.npmjs.com/package/is-number)#isNumber
-
-```javascript
-const validator = require('validator')
-console.log(validator.isDecimal('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
-
-const isNumber = require('is-number')
-console.log(isNumber('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
-```
-
-</details>
-
-<details>
 <summary>Complex Validation Example</summary>
 
 ```javascript
+// Complex but still has edge cases
 function isValidNumber(str) {
   // 1. Basic type checks
   if (typeof str !== 'string') return false
@@ -120,6 +106,22 @@ isValidNumber('.123') // true, accepts non-standard decimal format
 
 </details>
 
+<details>
+<summary>Using npm libraries: `validator` and `is-number`</summary>
+
+Using [validator](https://www.npmjs.com/package/validator)#isDecimal and [is-number](https://www.npmjs.com/package/is-number)#isNumber
+
+```javascript
+// Even popular libraries have limitations
+const validator = require('validator')
+console.log(validator.isDecimal('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+
+const isNumber = require('is-number')
+console.log(isNumber('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+```
+
+</details>
+
 This complex validation approach has several drawbacks:
 
 - Increases code complexity
@@ -139,22 +141,19 @@ This method aims to provide a simple and reliable way to validate input numeric 
 
 A input is considered "safe numeric string" if it meets ALL of the following criteria:
 
-1. Strict number format:
+1. Format Rules:
 
-   - Contains only digits (0-9)
+   - Contains only ASCII digits (0-9)
    - Has exactly one decimal point (optional)
    - May have one leading minus sign
-   - No other characters allowed (no whitespace)
-
-2. Value constraints:
-
-   - Integer part must be within ±2^53-1 (Number.MAX_SAFE_INTEGER)
-   - When converted to Number and back to string, must match the original input exactly
-
-3. Format requirements:
    - No leading zeros (except for decimal numbers < 1)
    - No trailing decimal point
    - No leading decimal point (must have 0 before decimal)
+   - No whitespace, or other characters allowed
+
+2. Value safety:
+   - Must be within the range of ±2^53-1 (Number.MAX_SAFE_INTEGER)
+   - Must maintain exact precision when converted to Number (no precision loss)
 
 Note: This method specifically targets JavaScript's float64 number format and does not consider:
 
@@ -205,7 +204,7 @@ A: This API focuses on the programmatic use case of decimal string validation. F
 **Q: Why not support scientific notation and other number formats (like hex)?**
 A: By only validating decimal strings, we ensure consistent data handling across different systems and reduce format-related bugs. Different number formats (scientific notation, hex) can lead to ambiguous interpretations and increase complexity in data processing.
 
-**Q: How does this relate to the decimal128 proposal?**
-A: This proposal focuses on validating whether a string can be safely converted to a JavaScript Number (float64) without precision loss or edge case issues. While the decimal128 proposal aims to provide a new numeric type for high-precision decimal arithmetic, this proposal helps developers validate input before using existing Number operations.
+**Q: How does this relate to the proposal-decimal?**
+A: The two proposals have different goals.
 
-The two proposals serve different but complementary purposes in JavaScript's numeric ecosystem.
+proposal-decimal introduces a new numeric type for high-precision arithmetic, while this proposal focuses on validating string-to-Number (float64) conversions.
