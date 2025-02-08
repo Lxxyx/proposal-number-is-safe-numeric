@@ -13,7 +13,7 @@ Key Benefits:
 ## Status
 
 **Stage:** 0  
-**Champion:** WIP  
+**Champion:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)
 **Authors:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)  
 **Last Presented:** (unpresented)
 
@@ -74,6 +74,22 @@ isNumeric('0.1234567890123456789') // true, but when converted to Number, precis
 </details>
 
 <details>
+<summary>Using npm libraries: `validator` and `is-number`</summary>
+
+Using [validator](https://www.npmjs.com/package/validator)#isDecimal and [is-number](https://www.npmjs.com/package/is-number)#isNumber
+
+```javascript
+// Even popular libraries have limitations
+const validator = require('validator')
+console.log(validator.isDecimal('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+
+const isNumber = require('is-number')
+console.log(isNumber('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+```
+
+</details>
+
+<details>
 <summary>Complex Validation Example</summary>
 
 ```javascript
@@ -106,22 +122,6 @@ isValidNumber('.123') // true, accepts non-standard decimal format
 
 </details>
 
-<details>
-<summary>Using npm libraries: `validator` and `is-number`</summary>
-
-Using [validator](https://www.npmjs.com/package/validator)#isDecimal and [is-number](https://www.npmjs.com/package/is-number)#isNumber
-
-```javascript
-// Even popular libraries have limitations
-const validator = require('validator')
-console.log(validator.isDecimal('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
-
-const isNumber = require('is-number')
-console.log(isNumber('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
-```
-
-</details>
-
 This complex validation approach has several drawbacks:
 
 - Increases code complexity
@@ -143,13 +143,10 @@ A input is considered "safe numeric string" if it meets ALL of the following cri
 
 1. Format Rules:
 
-   - Contains only ASCII digits (0-9)
-   - Has exactly one decimal point (optional)
-   - May have one leading minus sign
+   - Contains only ASCII digits (0-9) with optional single leading minus sign
+   - Has at most one decimal point, must have digits on both sides (e.g. "0.1", not ".1" or "1.")
    - No leading zeros (except for decimal numbers < 1)
-   - No trailing decimal point
-   - No leading decimal point (must have 0 before decimal)
-   - No whitespace, or other characters allowed
+   - No whitespace or other characters allowed
 
 2. Value safety:
    - Must be within the range of ±2^53-1 (Number.MAX_SAFE_INTEGER)
@@ -162,29 +159,45 @@ Note: This method specifically targets JavaScript's float64 number format and do
 - BigInt conversions
 - Decimal128 or other arbitrary precision formats
 
-Examples:
+### Examples
+
+#### Format Rules
 
 ```javascript
-// Valid number strings
+// Valid numeric strings
 Number.isSafeNumeric('0') // true
 Number.isSafeNumeric('123') // true
 Number.isSafeNumeric('-123') // true
 Number.isSafeNumeric('0.123') // true
 Number.isSafeNumeric('-0.123') // true
-Number.isSafeNumeric('9007199254740991') // true (MAX_SAFE_INTEGER)
+Number.isSafeNumeric('1.1') // true
 
-// Invalid format
+// Invalid numeric strings
 Number.isSafeNumeric('.123') // false (missing leading zero)
 Number.isSafeNumeric('123.') // false (trailing decimal)
 Number.isSafeNumeric('00123') // false (leading zeros)
 Number.isSafeNumeric('1.2.3') // false (multiple decimal points)
+Number.isSafeNumeric(' 0 ') // false (whitespace)
 Number.isSafeNumeric('1,000') // false (thousands separator)
+Number.isSafeNumeric('abc') // false (non-numeric characters)
+Number.isSafeNumeric('12a3') // false (contains letter)
 Number.isSafeNumeric('1e5') // false (scientific notation)
 Number.isSafeNumeric('1.23e-4') // false (scientific notation)
+Number.isSafeNumeric('0x123') // false (hexadecimal)
+```
 
-// Unsafe values
+#### Value Safety
+
+```javascript
+// Valid numeric strings
+Number.isSafeNumeric('9007199254740991') // true (MAX_SAFE_INTEGER)
+Number.isSafeNumeric('-9007199254740991') // true (-MAX_SAFE_INTEGER)
+Number.isSafeNumeric('1234.5678') // true (maintains precision)
+
+// Invalid numeric strings
 Number.isSafeNumeric('9007199254740992') // false (exceeds MAX_SAFE_INTEGER)
-Number.isSafeNumeric('0.1234567890123456789') // false (precision loss)
+Number.isSafeNumeric('9007199254740989.1') // false (precision loss near MAX_SAFE_INTEGER)
+Number.isSafeNumeric('0.1234567890123456789') // false (decimal precision loss)
 ```
 
 ## Specification
@@ -198,13 +211,17 @@ _No implementations yet_
 
 ## FAQ
 
-**Q: Why not support international number formats?**
-A: This API focuses on the programmatic use case of decimal string validation. For international number formats, use `Intl.NumberFormat`.
+**Q: Why enforce strict number format rules and not support other formats(scientific notation, International number formats, etc.)?**
 
-**Q: Why not support scientific notation and other number formats (like hex)?**
-A: By only validating decimal strings, we ensure consistent data handling across different systems and reduce format-related bugs. Different number formats (scientific notation, hex) can lead to ambiguous interpretations and increase complexity in data processing.
+A: By only validating decimal strings, we:
 
-**Q: How does this relate to the proposal-decimal?**
-A: The two proposals have different goals.
+1. Focus on the fundamental programming format used in JavaScript programming
+2. Ensure consistent parsing across different systems (e.g. `1e5` is `100000` in JavaScript but may be treated as string in others)
+3. Reduce complexity in data processing and validation
 
-proposal-decimal introduces a new numeric type for high-precision arithmetic, while this proposal focuses on validating string-to-Number (float64) conversions.
+**Q: How does this relate to proposal-decimal?**
+
+A: These two proposals have different goals:
+
+- proposal-decimal creates a new type of number for precise calculations
+- this proposal (Number.isSafeNumeric) just checks if a string can be safely converted to a regular JavaScript number (float64)

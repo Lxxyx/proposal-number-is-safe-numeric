@@ -15,14 +15,18 @@ contributors: ZiJian Liu, YiLong Li
 <emu-clause id="sec-number.issafenumeric">
   <h1>Number.isSafeNumeric ( _input_ )</h1>
   <emu-note>
-    <p>This method determines if a string can be safely converted to a JavaScript Number (float64) without precision loss. A string is considered "safe numeric" if it meets ALL of the following criteria:</p>
+    <p>This method determines if a string can be safely converted to a JavaScript Number (float64). A string is considered "safe numeric" if it meets ALL of the following criteria:</p>
+    <p>Format Rules:</p>
     <ul>
-      <li>Contains only digits (0-9), with exactly one decimal point (optional), and may have one leading minus sign</li>
-      <li>Integer part must be within ±2^53-1 (Number.MAX_SAFE_INTEGER)</li>
-      <li>Must maintain exact precision when converted to Number (no precision loss)</li>
+      <li>Contains only ASCII digits (0-9) with optional single leading minus sign</li>
+      <li>Has at most one decimal point, must have digits on both sides (e.g. "0.1", not ".1" or "1.")</li>
       <li>No leading zeros (except for decimal numbers < 1)</li>
-      <li>No trailing decimal point</li>
-      <li>No leading decimal point (must have 0 before decimal)</li>
+      <li>No whitespace or other characters allowed</li>
+    </ul>
+    <p>Value safety:</p>
+    <ul>
+      <li>Must be within the range of ±2^53-1 (Number.MAX_SAFE_INTEGER)</li>
+      <li>Must maintain exact precision when converted to Number (no precision loss)</li>
     </ul>
   </emu-note>
   <p>When the *isSafeNumeric* method is called with argument _input_, the following steps are taken:</p>
@@ -46,10 +50,7 @@ contributors: ZiJian Liu, YiLong Li
     1. If _num_ is *NaN* or is not finite, return *false*.
     1. Let _converted_ be ? ToString(_num_).
     1. If SameValue(_converted_, _str_) is *false*, return *false*.
-    1. Let _integerPart_ be the substring of _str_ before any decimal point, or _str_ if no decimal point exists.
-    1. Let _integerValue_ be ? ToNumber(_integerPart_).
-    1. If abs(_integerValue_) > 2<sup>53</sup> - 1, return *false*.
-    1. If abs(_integerValue_) = 2<sup>53</sup> - 1 and _str_ contains a decimal point, return *false*.
+    1. If abs(_num_) > 2<sup>53</sup> - 1, return *false*.
     1. return *true*.
   </emu-alg>
 </emu-clause>
