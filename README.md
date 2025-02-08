@@ -13,7 +13,7 @@ Key Benefits:
 ## Status
 
 **Stage:** 0  
-**Champion:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)
+**Champion:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)  
 **Authors:** [ZiJian Liu](@lxxyx) / [YiLong Li](@umuoy1)  
 **Last Presented:** (unpresented)  
 **Slides:**
