@@ -152,15 +152,31 @@ A input is considered "safe numeric string" if it meets ALL of the following cri
    - No whitespace or other characters allowed
 
 2. Value safety:
-   - Must be within the range of ±2^53-1 (Number.MAX_SAFE_INTEGER)
-   - Must maintain exact precision when converted to Number (no precision loss)
+   - Must be within the range of ±2^53-1 (`Number.MAX_SAFE_INTEGER`)
+   - The mathematical value represented by the string must be exactly equal to the mathematical value of the resulting Number value after conversion. That is:
+     `MV(string) === ℝ(ToNumber(string))`. `MV` is the String  mathematical value(pesudo code), [`ℝ`](https://tc39.es/ecma262/#%E2%84%9D) is the Number's.
+
+     Note: 
+     - When converting this Numeric String to a JavaScript Number, it will be using [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult):
+       1. If the decimal representation has 20 or fewer significant digits, [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will return the mathematical value.
+       2. If it has more than 20 significant digits, [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will replacing each significant digit in the decimal representation of n after the 20th with a 0 digit, this will change the mathematical value of the string.
+       3. The internal binary representation might look different when displayed as a decimal (e.g., 1234.56780000000003383), but it represents the same mathematical value if no rounding occurred.
+     - The equation verifies that the mathematical value can be represented exactly in JavaScript Number without [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) modifying the value.
+
+     For example:
+     - "1234.5678" is safe because:
+       - It has 8 significant digits (< 20)
+       - Its mathematical value is preserved exactly in JavaScript Number
+     - "0.300000000000000041" is not safe because:
+       - It has 21 significant digits (> 20)
+       - [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will round it to 0.30000000000000004
 
 Note: This method specifically targets JavaScript's float64 number format and does not consider:
 
 - International number formats (use Intl.NumberFormat for those cases)
 - Scientific notation (e.g., 1e5)
 - BigInt conversions
-- Decimal128 or other arbitrary precision formats
+- Arbitrary precision formats
 
 ### Examples
 
