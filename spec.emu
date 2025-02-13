@@ -49,7 +49,8 @@ contributors: ZiJian Liu, YiLong Li
     1. Let _mv1_ be the mathematical value of _str_.
     1. If abs(_mv1_) > 2<sup>53</sup> - 1, return *false*.
     1. Let _num_ be ? ToNumber(_str_).
-    1. Let _mv2_ be ℝ(_num_).
+    1. Let _strResult_ be ? ToString(_num_).
+    1. Let _mv2_ be the mathematical value of _strResult_.
     1. If _mv1_ is not equal to _mv2_, return *false*.
     1. return *true*.
   </emu-alg>

@@ -6,8 +6,8 @@ A simple and reliable method to validate input is numeric string and represents 
 
 Key Benefits:
 
-1. Ensure input is a valid numeric string, **reducing unexpected behaviors during parsing and subsequent calculations**
-2. Avoid precision loss that may lead to unexpected behavior **(developers may not aware of this)**
+1. Ensure input is a valid numeric string, **reducing unexpected behaviors during parsing and subsequent operations**
+2. Avoid string's mathematical value changes during string-number conversions **(developers may not aware of this)**
 3. Reduce developer mental overhead
 
 ## Status
@@ -50,8 +50,8 @@ JavaScript's built-in methods (`Number()`, `parseInt()`, `parseFloat()`, `isFini
 | `'00123'`                 | `123`                 | `123`              | `123`                 | `true`       | Leading zeros silently accepted          |
 | `'1e5'`                   | `100000`              | `1`                | `100000`              | `true`       | Scientific notation handling varies      |
 | `'0x123'`                 | `291`                 | `291`              | `0`                   | `true`       | Hex string handling inconsistent         |
-| `'9007199254740993'`      | `9007199254740992`    | `9007199254740992` | `9007199254740992`    | `true`       | Large number precision loss              |
-| `'0.1234567890123456789'` | `0.12345678901234568` | `0`                | `0.12345678901234568` | `true`       | Decimal precision loss                   |
+| `'9007199254740993'`      | `9007199254740992`    | `9007199254740992` | `9007199254740992`    | `true`       | Exceeds MAX_SAFE_INTEGER                 |
+| `'0.1234567890123456789'` | `0.12345678901234568` | `0`                | `0.12345678901234568` | `true`       | Mathematical value changes in conversion |
 | `'Infinity'`              | `Infinity`            | `NaN`              | `Infinity`            | `false`      | Infinity handling inconsistent           |
 | `'-Infinity'`             | `-Infinity`           | `NaN`              | `-Infinity`           | `false`      | Negative infinity handling inconsistent  |
 
@@ -71,7 +71,7 @@ function isNumeric(str) {
   return !isNaN(str) && !isNaN(parseFloat(str))
 }
 
-isNumeric('0.1234567890123456789') // true, but when converted to Number, precision loss will happen
+isNumeric('0.1234567890123456789') // true, but mathematical value changes when converted to Number
 ```
 
 </details>
@@ -84,10 +84,10 @@ Using [validator](https://www.npmjs.com/package/validator)#isDecimal and [is-num
 ```javascript
 // Even popular libraries have limitations
 const validator = require('validator')
-console.log(validator.isDecimal('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+console.log(validator.isDecimal('0.1234567890123456789')) // true, but mathematical value changes when converted to Number
 
 const isNumber = require('is-number')
-console.log(isNumber('0.1234567890123456789')) // true, but when converted to Number, precision loss will happen
+console.log(isNumber('0.1234567890123456789')) // true, but mathematical value changes when converted to Number
 ```
 
 </details>
@@ -152,31 +152,18 @@ A input is considered "safe numeric string" if it meets ALL of the following cri
    - No whitespace or other characters allowed
 
 2. Value safety:
+
    - Must be within the range of ±2^53-1 (`Number.MAX_SAFE_INTEGER`)
-   - The mathematical value represented by the string must be exactly equal to the mathematical value of the resulting Number value after conversion. That is:
-     `MV(string) === ℝ(ToNumber(string))`. `MV` is the String  mathematical value(pesudo code), [`ℝ`](https://tc39.es/ecma262/#%E2%84%9D) is the Number's.
+   - The mathematical value represented by the string must remain unchanged through the string-number-string conversion process. That is:
+     `MV(string) === MV(ToString(ToNumber(string)))`, `MV` is the mathematical value of the string(pesudo code).
 
-     Note: 
-     - When converting this Numeric String to a JavaScript Number, it will be using [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult):
-       1. If the decimal representation has 20 or fewer significant digits, [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will return the mathematical value.
-       2. If it has more than 20 significant digits, [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will replacing each significant digit in the decimal representation of n after the 20th with a 0 digit, this will change the mathematical value of the string.
-       3. The internal binary representation might look different when displayed as a decimal (e.g., 1234.56780000000003383), but it represents the same mathematical value if no rounding occurred.
-     - The equation verifies that the mathematical value can be represented exactly in JavaScript Number without [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) modifying the value.
+   This equation ensures:
 
-     For example:
-     - "1234.5678" is safe because:
-       - It has 8 significant digits (< 20)
-       - Its mathematical value is preserved exactly in JavaScript Number
-     - "0.300000000000000041" is not safe because:
-       - It has 21 significant digits (> 20)
-       - [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) will round it to 0.30000000000000004
+   - The string can be safely converted to a JavaScript Number and back without losing its original mathematical meaning.
+   - The displayed value will be consistent across different systems and contexts
+   - Aligns with developer's intuition and expectations.
 
-Note: This method specifically targets JavaScript's float64 number format and does not consider:
-
-- International number formats (use Intl.NumberFormat for those cases)
-- Scientific notation (e.g., 1e5)
-- BigInt conversions
-- Arbitrary precision formats
+   For more details, see [Why string to number to string may cause mathematical value changes](#why-string-to-number-to-string-may-cause-mathematical-value-changes)
 
 ### Examples
 
@@ -211,13 +198,31 @@ Number.isSafeNumeric('0x123') // false (hexadecimal)
 // Valid numeric strings
 Number.isSafeNumeric('9007199254740991') // true (MAX_SAFE_INTEGER)
 Number.isSafeNumeric('-9007199254740991') // true (-MAX_SAFE_INTEGER)
-Number.isSafeNumeric('1234.5678') // true (maintains precision)
+Number.isSafeNumeric('1234.5678') // true (maintains same mathematical value after conversion)
 
 // Invalid numeric strings
 Number.isSafeNumeric('9007199254740992') // false (exceeds MAX_SAFE_INTEGER)
-Number.isSafeNumeric('9007199254740989.1') // false (precision loss near MAX_SAFE_INTEGER)
-Number.isSafeNumeric('0.1234567890123456789') // false (decimal precision loss)
+Number.isSafeNumeric('9007199254740989.1') // false (mathematical value changes near MAX_SAFE_INTEGER)
+Number.isSafeNumeric('0.1234567890123456789') // false (mathematical value changes in conversion)
 ```
+
+## More Details
+
+### Why string to number to string may cause mathematical value changes
+
+During the String → Number conversion process, two factors may cause the mathematical value to change:
+
+a) [RoundMVResult](https://tc39.es/ecma262/#sec-roundmvresult) behavior:
+
+- When a decimal string has more than 20 significant digits, the value will be modified during conversion
+- This modification is irreversible and always changes the original mathematical value
+- Example: "0.300000000000000041" becomes "0.30000000000000004"
+
+b) IEEE-754 double precision format limitations:
+
+- Some decimal values cannot be represented exactly in binary format
+- This may lead to different decimal representations when converting back to string
+- for examples: `Number('0.300000000000000041')` is `0.30000000000000004`, but `0.30000000000000004.toString()` is `0.30000000000000004`, which is not the same as the original string.
 
 ## Specification
 
@@ -237,6 +242,12 @@ A: By only validating decimal strings, we:
 1. Focus on the fundamental programming format used in JavaScript programming
 2. Ensure consistent parsing across different systems (e.g. `1e5` is `100000` in JavaScript but may be treated as string in others)
 3. Reduce complexity in data processing and validation
+
+**Q: How to handle subsequent numeric calculations?**
+
+A: This proposal focuses on ensuring numeric string representation is safe to be converted to a JavaScript number (float64).
+
+For high-precision decimal calculations, please refer to high-precision decimal libraries like [decimal.js](https://github.com/MikeMcl/decimal.js/) or the upcoming [proposal-decimal](https://github.com/tc39/proposal-decimal).
 
 **Q: How does this relate to proposal-decimal?**
 
