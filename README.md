@@ -155,7 +155,7 @@ A input is considered "safe numeric string" if it meets ALL of the following cri
 
    - Must be within the range of ±2^53-1 (`Number.MAX_SAFE_INTEGER`)
    - The mathematical value represented by the string must remain unchanged through the string-number-string conversion process. That is:
-     `MV(string) === MV(ToString(ToNumber(string)))`, `MV` is the mathematical value of the string(pesudo code).
+     `MV(string) === MV(ToString(ToNumber(string)))`, `MV` is the mathematical value of the string(pseudo code).
 
    This equation ensures:
 
