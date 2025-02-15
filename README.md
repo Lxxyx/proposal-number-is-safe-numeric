@@ -24,10 +24,10 @@ Key Benefits:
 
 In web development, validating strings that can be safely converted to JavaScript Numbers (float64) is a common requirement, particularly in scenarios like:
 
-- API response parsing
-- Form input validation
-- Financial calculations
-- Data processing
+- API response parsing(falsy values(`null`, `undefined`, `''`), `Java.Long` overflow,  etc.)
+- Form input validation(falsy values, whitespace, unexpected characters, etc.)
+- Financial calculations(Mathematical value changes in conversion)
+- Data processing(complex validation logic)
 
 However, current solutions have significant limitations:
 
@@ -235,13 +235,37 @@ _No implementations yet_
 
 ## FAQ
 
-**Q: Why enforce strict number format rules and not support other formats(scientific notation, International number formats, etc.)?**
+**Q: Why use strict number format rules by default, and not support other formats(scientific notation, International number formats, etc.)?**
 
-A: By only validating decimal strings, we:
+A: By validating decimal strings, we:
 
 1. Focus on the fundamental programming format used in JavaScript programming
 2. Ensure consistent parsing across different systems (e.g. `1e5` is `100000` in JavaScript but may be treated as string in others)
 3. Reduce complexity in data processing and validation
+
+Further, we could add the second parameter to support more formats and parsing options. 
+
+For example:
+
+1. Support scientific notation with `format` option (enum: `'decimal'`, `'number'`)
+
+```javascript
+// Scientific notation format
+Number.isSafeNumeric('1e5', { format: 'number' }) // true, with decimal + scientific notation supported
+
+// Decimal format
+Number.isSafeNumeric('100000', { format: 'decimal' }) // true
+```
+
+2. Support flexible parsing with `loose` option (boolean, default: `false`) to allow common number formats, which is more friendly to old code that already uses these formats.
+
+```javascript
+Number.isSafeNumeric('00123', { loose: true }) // true, with leading zeros
+Number.isSafeNumeric('+123', { loose: true }) // true, with leading plus sign
+Number.isSafeNumeric('.123', { loose: true }) // true, with leading decimal point
+Number.isSafeNumeric('123.', { loose: true }) // true, with trailing decimal point
+Number.isSafeNumeric(' 0 ', { loose: true }) // true, with whitespace
+```
 
 **Q: How to handle subsequent numeric calculations?**
 
