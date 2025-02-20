@@ -7,7 +7,8 @@ Here is the problem statement.
 1. Clarify the real problem we are facing
 2. Remove strict format rules by default, align with ECMAScript StringNumericLiteral format.
 3. Remove `Number.MAX_SAFE_INTEGER` limits
-4. Add Identification of unsafe numeric string
+4. Add Identification of unsafe numeric string.
+5. Add more faq for changes and feedbacks.
 
 ## Motivation
 
