@@ -1,5 +1,7 @@
 # `Number.isSafeNumeric`
 
+> For problem-statement, please look at https://github.com/Lxxyx/proposal-number-is-safe-numeric/issues/4
+
 A TC39 proposal to add `Number.isSafeNumeric`.
 
 A simple and reliable method to validate input is numeric string and represents a valid javascript number.
